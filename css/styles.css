@@ -1,0 +1,415 @@
+/* General Background Style */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: rgb(242, 242, 242);
+    text-align: center;
+    padding: 20px;
+    margin: 0;
+    color: #333;
+    position: relative;
+    overflow: hidden; /* Hide any overflowing animated objects */
+}
+body, html {
+    margin: 0;
+    overflow: hidden;
+}
+
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2; /* Keeps it in the background */
+}
+
+/* Container for content */
+.container {
+    position: relative;
+    z-index: 2; /* Content stays above the background objects */
+}
+
+/* Floating Objects Base Style */
+/*
+.floating-object {
+    position: absolute;
+    animation: moveAround 10s infinite ease-in-out; 
+    z-index: 0; 
+}
+
+
+.floating-object.circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: rgba(0, 123, 255, 0.7); 
+}
+
+
+.floating-object.rectangle {
+    width: 50px;
+    height: 30px;
+    background-color: rgba(255, 99, 71, 0.7); 
+}
+
+
+.floating-object.triangle {
+    width: 0;
+    height: 0;
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    border-bottom: 50px solid rgba(0, 255, 0, 0.7); 
+}
+
+
+.floating-object.line {
+    width: 100px;
+    height: 2px;
+    background-color: rgba(255, 159, 64, 0.7);
+}
+
+.floating-object.hexagon {
+    width: 60px;
+    height: 60px;
+    background-color: rgba(255, 0, 255, 0.7);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.floating-object.star {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 215, 0, 0.7); 
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+
+.floating-object.square {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(0, 255, 255, 0.7); 
+}
+
+
+.floating-object.pentagon {
+    width: 0;
+    height: 0;
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    border-bottom: 50px solid rgba(255, 99, 71, 0.7); 
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 79% 91%, 50% 70%);
+}
+
+
+.floating-object.bike {
+    width: 60px;
+    height: 60px;
+    background-color: rgba(255, 165, 0, 0.7); 
+    clip-path: polygon(0% 40%, 10% 10%, 30% 0%, 50% 10%, 70% 0%, 90% 10%, 100% 40%, 90% 70%, 70% 90%, 50% 80%, 30% 90%, 10% 70%);
+}
+
+
+.floating-object.computer {
+    width: 60px;
+    height: 40px;
+    background-color: rgba(0, 255, 0, 0.7);
+    border-radius: 5px;
+    position: relative;
+}
+
+.floating-object.computer:before {
+    content: "";
+    width: 30px;
+    height: 5px;
+    background-color: rgba(0, 255, 0, 0.7); 
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.floating-object.phone {
+    width: 30px;
+    height: 60px;
+    background-color: rgba(0, 123, 255, 0.7); 
+    border-radius: 8px;
+    position: relative;
+}
+
+.floating-object.phone:before {
+    content: "";
+    width: 15px;
+    height: 3px;
+    background-color: rgba(0, 123, 255, 0.7); 
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+
+@keyframes moveAround {
+    0% {
+        transform: translate(0, 0);
+    }
+    25% {
+        transform: translate(200px, -100px); 
+    }
+    50% {
+        transform: translate(400px, 200px); 
+    }
+    75% {
+        transform: translate(-200px, 300px); 
+    }
+    100% {
+        transform: translate(0, 0);
+    }
+}
+*/
+
+/* Main Container */
+.container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px; /* Space between the cards */
+    width: 90%;
+    max-width: 1200px;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    margin: auto;
+    margin-top: 50px;
+}
+
+/* Heading */
+h1 {
+    position: relative;
+    z-index: 2;
+    font-size: 2em;
+    color: #007bff;
+    margin-bottom: 20px;
+}
+
+p {
+    position: relative;
+    z-index: 2;
+    font-size: 1.2em;
+    margin-bottom: 30px;
+    color: #555;
+}
+
+/* Card Styles */
+.card {
+    background-color: #fff;
+    padding: 5px 20px 30px 20px;
+    flex: 1;
+    min-width: 300px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card h2 {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* Inputs */
+input, textarea {
+    width: 95%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: 0.3s;
+}
+
+input:focus, textarea:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* Button Styles */
+button {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    cursor: pointer;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: 0.3s;
+    /*margin-top: 12px;*/
+}
+
+button:hover {
+    background: linear-gradient(45deg, #0056b3, #003d80);
+}
+
+/* Output Box */
+.result-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafafa;
+    padding: 14px;
+    margin-top: 10px;
+    border-radius: 8px;
+    min-height: 50px;
+    border-left: 5px solid #007bff;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    align-content:space-between;
+}
+
+/* Encoded/Decoded Text Display */
+.result-container span {
+    flex-grow: 1;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: calc(100% - 90px);
+    font-weight: 500;
+    color: #333;
+}
+
+/* Copy Button */
+.copy-btn {
+    width: 85px;
+    height: auto;
+    background: linear-gradient(45deg, #28a745, #1e7e34);
+    color: white;
+    font-size: 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.copy-btn:hover {
+    background: linear-gradient(45deg, #1e7e34, #155d27);
+}
+
+/* Copied Effect */
+.copied {
+    background: linear-gradient(45deg, #ff9900, #cc7a00) !important;
+}
+
+
+/* Responsive Design */
+
+/* Mobile (<= 600px) */
+@media (max-width: 600px) {
+    h1 {
+        font-size: 1.5em;
+    }
+
+    .container {
+        flex-direction: column;
+        padding: 20px;
+        margin-top: 30px;
+    }
+
+    .card {
+        margin-bottom: 20px;
+        width: 100%;
+    }
+
+    .encoder-card, .decoder-card {
+        width: 100%;
+    }
+
+    input, textarea {
+        width: 100%;
+        font-size: 14px;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .result-container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .copy-btn {
+        width: 100%;
+        margin-top: 10px;
+    }
+}
+
+/* Tablet (<= 900px) */
+@media (max-width: 900px) {
+    .container {
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    .card {
+        margin-bottom: 20px;
+        width: 93%;
+    }
+
+    .encoder-card, .decoder-card {
+        width: 100%;
+    }
+
+    input, textarea {
+        width: 95%;
+        font-size: 15px;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        font-size: 15px;
+    }
+
+    .result-container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .copy-btn {
+        width: 40%;
+        margin-top: 15px;
+    }
+}
+
+/* Desktop (>= 901px) */
+@media (min-width: 901px) {
+    .container {
+        flex-direction: row;
+        padding: 30px;
+    }
+
+    .card {
+        margin-bottom: 0;
+        width: 45%;
+    }
+
+    .encoder-card {
+        margin-bottom: 20px;
+    }
+
+    input, textarea {
+        font-size: 16px;
+    }
+
+    button {
+        font-size: 16px;
+    }
+
+    .result-container {
+        flex-direction: row;
+        text-align: left;
+    }
+
+    .copy-btn {
+        width: auto;
+    }
+}
