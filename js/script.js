@@ -126,19 +126,23 @@ function createFloatingObjects() {
 createFloatingObjects();
 */
 
+// Matrix Effect (No changes needed)
 const canvas = document.getElementById("matrixCanvas");
 const ctx = canvas.getContext("2d");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*?|}{[]+_=-()";
-const fontSize = 15;
+const letters = "QWERTYUIOPASDFGHJKLZXCVBNM01871468781!@#$%^&*?|}{[]+_=-()";
+
+const fontSize = 12.5;
 const columns = Math.floor(canvas.width / fontSize);
-const drops = Array(columns).fill(1);
+//const drops = Array(columns).fill(1);
+const drops = Array(columns).fill().map(() => Math.floor(Math.random() * canvas.height / fontSize));
+
 
 function draw() {
-    ctx.fillStyle = "rgba(242, 242, 242, 0.2)";
+    ctx.fillStyle = "rgba(242, 242, 242, 0.15)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.fillStyle = "#b3b3b3"; // Green color
