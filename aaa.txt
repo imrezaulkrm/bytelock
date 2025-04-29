@@ -1,0 +1,284 @@
+const mongoose = require('mongoose');
+require('dotenv').config();
+
+const connectDB = async () => {
+    try {
+        await mongoose.connect(process.env.MONGO_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
+        console.log("MongoDB connected");
+    } catch (err) {
+        console.error(err.message);
+        process.exit(1);
+    }
+};
+
+module.exports = connectDB;
+
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const User = require('../models/user');
+
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: '/auth/google/callback',
+}, async (accessToken, refreshToken, profile, done) => {
+    try {
+        let user = await User.findOne({ googleId: profile.id });
+        if (!user) {
+            user = new User({
+                googleId: profile.id,
+                name: profile.displayName,
+                email: profile.emails[0].value
+            });
+            await user.save();
+        }
+        return done(null, user);
+    } catch (err) {
+        done(err, null);
+    }
+}));
+
+passport.serializeUser((user, done) => done(null, user.id));
+
+// Updated passport.deserializeUser
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await User.findById(id);  // Use async/await here
+        done(null, user);
+    } catch (err) {
+        done(err, null);
+    }
+});
+
+const passport = require('passport');
+const User = require('../models/user');
+const jwt = require('jsonwebtoken');
+
+exports.googleLogin = async (req, res) => {
+    const { googleId, name, email } = req.user;
+
+    try {
+        let user = await User.findOne({ googleId });
+        if (!user) {
+            user = new User({ googleId, name, email });
+            await user.save();
+        }
+
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        res.status(200).json({ token });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Error logging in" });
+    }
+};
+
+const crypto = require('crypto');
+const Message = require('../models/message');
+const UniversalMessage = require('../models/universalMessage');
+
+const algorithm = 'aes-256-cbc'; // AES Algorithm
+const iv = crypto.randomBytes(16); // Initialization Vector
+
+// Custom Encoding Function
+const customEncode = (message, key) => {
+    const cipher = crypto.createCipheriv(algorithm, crypto.scryptSync(key, 'salt', 32), iv);
+    let encrypted = cipher.update(message, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    return `${iv.toString('hex')}:${encrypted}`; // Store IV with the encrypted text
+};
+
+// Custom Decoding Function
+const customDecode = (encodedMessage, key) => {
+    const [ivHex, encryptedData] = encodedMessage.split(':');
+    const decipher = crypto.createDecipheriv(algorithm, crypto.scryptSync(key, 'salt', 32), Buffer.from(ivHex, 'hex'));
+    let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+};
+
+// Encode Message
+const encodeMessage = async (req, res) => {
+    const { message, key, userId } = req.body;
+    if (!message || !key) {
+        return res.status(400).json({ message: "Message and key are required" });
+    }
+    try {
+        const encodedMessage = customEncode(message, key);
+        if (!userId) {
+            const newMessage = new UniversalMessage({ message: encodedMessage, key });
+            await newMessage.save();
+        }
+        res.status(200).json({ encodedMessage });
+    } catch (err) {
+        res.status(500).json({ message: "Error encoding message", error: err });
+    }
+};
+
+// Save Message
+const saveMessage = async (req, res) => {
+    const { message, key, userId } = req.body;
+    if (!userId) {
+        return res.status(403).json({ message: "You must be logged in to save messages" });
+    }
+    try {
+        const newMessage = new Message({ message, key, user: userId });
+        await newMessage.save();
+        res.status(200).json({ message: "Message saved successfully!" });
+    } catch (err) {
+        res.status(500).json({ message: "Error saving message", error: err });
+    }
+};
+
+// Get Messages
+const getMessages = async (req, res) => {
+    try {
+        const messages = await Message.find();
+        res.json(messages);
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching messages", error: err });
+    }
+};
+
+// Get Universal Messages
+const getUniversalMessages = async (req, res) => {
+    try {
+        const messages = await UniversalMessage.find();
+        res.json(messages);
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching universal messages", error: err });
+    }
+};
+
+// Delete Message
+const deleteMessage = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await Message.findByIdAndDelete(id);
+        res.json({ message: "Message deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ message: "Error deleting message", error: err });
+    }
+};
+
+// Decode Message
+const decodeMessage = (req, res) => {
+    const { encodedMessage, key } = req.body;
+    if (!encodedMessage || !key) {
+        return res.status(400).json({ message: "Encoded message and key are required" });
+    }
+    try {
+        const decodedMessage = customDecode(encodedMessage, key);
+        res.status(200).json({ decodedMessage });
+    } catch (err) {
+        res.status(500).json({ message: "Error decoding message", error: err });
+    }
+};
+
+// Export functions
+module.exports = {
+    encodeMessage,
+    saveMessage,
+    getMessages,
+    getUniversalMessages,
+    deleteMessage,
+    decodeMessage
+};
+
+const mongoose = require('mongoose');
+
+const MessageSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    message: { type: String, required: true },
+    key: { type: String, required: true },
+});
+
+module.exports = mongoose.model('Message', MessageSchema);
+
+const mongoose = require('mongoose');
+
+const UniversalMessageSchema = new mongoose.Schema({
+    message: { type: String, required: true },
+    key: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+});
+
+module.exports = mongoose.model('UniversalMessage', UniversalMessageSchema);
+
+const mongoose = require('mongoose');
+
+const UserSchema = new mongoose.Schema({
+    googleId: { type: String, required: true },
+    name: { type: String, required: true },
+    email: { type: String, required: true },
+});
+
+module.exports = mongoose.model('User', UserSchema);
+
+const express = require('express');
+const passport = require('passport');
+const router = express.Router();
+const { googleLogin } = require('../controllers/authController');
+
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+router.get('/google/callback', 
+    passport.authenticate('google', { failureRedirect: '/' }), 
+    googleLogin
+);
+
+module.exports = router;
+
+const express = require('express');
+const router = express.Router();
+const messageController = require('../controllers/messageController'); // Import controller
+
+// Destructure functions from the controller
+const { encodeMessage, saveMessage, getMessages, deleteMessage, getUniversalMessages, decodeMessage } = messageController;
+
+// POST routes
+router.post('/encode', encodeMessage);
+router.post('/save', saveMessage);
+router.post('/decode', decodeMessage); // Add this route for decoding
+
+// GET routes
+router.get('/', getMessages);
+router.get('/universal', getUniversalMessages);
+
+// DELETE routes
+router.delete('/:id', deleteMessage);
+
+module.exports = router;
+
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const passport = require('passport');
+const dotenv = require('dotenv');
+const session = require('express-session');
+const connectDB = require('./config/db');
+const authRoutes = require('./routes/auth');
+const messageRoutes = require('./routes/message');
+require('./config/passport');
+
+dotenv.config();
+connectDB();
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: true }));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use('/auth', authRoutes);
+app.use('/messages', messageRoutes);
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
