@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="image/title.png" type="image/png">
+    <title>BYTELOCK</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<h1>Bytelock</h1>
+<p>Enter your message for secure encoding and decoding.</p>
+
+<canvas id="matrixCanvas"></canvas>
+
+<div class="container">
+    <div id="messageBox" style="display: none; padding: 10px; margin: 10px 0; border-radius: 5px;"></div>
+    <!-- Encoder Card -->
+    <div class="card">
+        <h2>Encoder</h2>
+        <input type="text" id="encodeKey" placeholder="Enter a key for encoding" />
+        <textarea id="messageToEncode" placeholder="Enter message to encode"></textarea>
+        <button onclick="encodeMessage()">Encode</button>
+        <div class="result-container">
+            <span id="encodedMessage" class="result"></span>
+            <button class="copy-btn" onclick="copyEncoded()">Copy</button>
+        </div>
+    </div>
+
+    <!-- Decoder Card -->
+    <div class="card">
+        <h2>Decoder</h2>
+        <input type="text" id="decodeKey" placeholder="Enter a key for decoding" />
+        <textarea id="messageToDecode" placeholder="Enter encoded message"></textarea>
+        <button onclick="decodeMessage()">Decode</button>
+        <div class="result-container">
+            <span id="decodedMessage" class="result"></span>
+            <button class="copy-btn" onclick="copyDecoded()">Copy</button>
+        </div>
+    </div>
+</div>
+
+
+<script src="js/script.js"></script>
+
+</body>
+</html>
