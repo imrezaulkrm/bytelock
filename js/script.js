@@ -1,6 +1,7 @@
 // Backend API Base URL
 //const API_BASE_URL = 'http://localhost:5000/messages';
-const API_BASE_URL = 'https://bytelock-backend.onrender.com/messages';
+//const API_BASE_URL = 'https://bytelock-backend.onrender.com/messages';
+const API_BASE_URL = 'bytelock/messages';
 
 
 // Encode and Save Message (Backend Integration)
