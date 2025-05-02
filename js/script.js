@@ -68,37 +68,90 @@ function shortenText(text, length = 20) {
 // Copy encoded text
 function copyEncoded() {
     const encodedElement = document.getElementById('encodedMessage');
+    if (!encodedElement) {
+        console.error("Encoded element not found!");
+        return;
+    }
+
     const fullText = encodedElement.getAttribute('data-full');
+    if (!fullText) {
+        console.error("No data-full attribute found on encoded element!");
+        return;
+    }
+
     const copyBtn = encodedElement.nextElementSibling;
 
-    if (fullText) {
-        navigator.clipboard.writeText(fullText);
-        copyBtn.innerText = "Copied!";
-        copyBtn.classList.add('copied');
-
-        setTimeout(() => {
-            copyBtn.innerText = "Copy";
-            copyBtn.classList.remove('copied');
-        }, 1500);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        // Modern Clipboard API
+        navigator.clipboard.writeText(fullText).then(() => {
+            showCopySuccess(copyBtn);
+        }).catch(err => {
+            console.error("Failed to copy text:", err);
+        });
+    } else {
+        // Fallback for older browsers
+        console.warn("Clipboard API not supported. Using fallback.");
+        const tempInput = document.createElement('textarea');
+        tempInput.value = fullText;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        try {
+            document.execCommand('copy');
+            showCopySuccess(copyBtn);
+        } catch (err) {
+            console.error("Fallback copy failed:", err);
+        }
+        document.body.removeChild(tempInput);
     }
 }
-
 // Copy decoded text
 function copyDecoded() {
     const decodedElement = document.getElementById('decodedMessage');
+    if (!decodedElement) {
+        console.error("Decoded element not found!");
+        return;
+    }
+
     const fullText = decodedElement.getAttribute('data-full');
+    if (!fullText) {
+        console.error("No data-full attribute found on decoded element!");
+        return;
+    }
+
     const copyBtn = decodedElement.nextElementSibling;
 
-    if (fullText) {
-        navigator.clipboard.writeText(fullText);
-        copyBtn.innerText = "Copied!";
-        copyBtn.classList.add('copied');
-
-        setTimeout(() => {
-            copyBtn.innerText = "Copy";
-            copyBtn.classList.remove('copied');
-        }, 1500);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        // Modern Clipboard API
+        navigator.clipboard.writeText(fullText).then(() => {
+            showCopySuccess(copyBtn);
+        }).catch(err => {
+            console.error("Failed to copy text:", err);
+        });
+    } else {
+        // Fallback for older browsers
+        console.warn("Clipboard API not supported. Using fallback.");
+        const tempInput = document.createElement('textarea');
+        tempInput.value = fullText;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        try {
+            document.execCommand('copy');
+            showCopySuccess(copyBtn);
+        } catch (err) {
+            console.error("Fallback copy failed:", err);
+        }
+        document.body.removeChild(tempInput);
     }
+}
+// Help Button Functionality 
+function showCopySuccess(copyBtn) {
+    copyBtn.innerText = "Copied!";
+    copyBtn.classList.add('copied');
+
+    setTimeout(() => {
+        copyBtn.innerText = "Copy";
+        copyBtn.classList.remove('copied');
+    }, 1500);
 }
 
 // Matrix Effect (No changes needed)
