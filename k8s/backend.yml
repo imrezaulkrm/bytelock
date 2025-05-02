@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: bytelock 
+  labels:
+    app: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: imrezaulkrm/bytelock:backend-1
+          ports:
+            - containerPort: 5000
+          env:
+            - name: MONGO_URI
+              value: mongodb+srv://imrezaulkrm:Shopno89@cluster0.v4nxd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+            - name: JWT_SECRET
+              value: w5vDlsOkw4vDhcKBw6bDocOMw7HDksK7
+            - name: SESSION_SECRET
+              value: w5vDlsOkw4vDhcKBw6bDocOMw7HDksK7wpLDlsKy
+            - name: GOOGLE_CLIENT_ID
+              value: 
+            - name: GOOGLE_CLIENT_SECRET
+              value: 
+            - name: GOOGLE_CALLBACK_URL
+              value: http://localhost:5000/auth/google/callback
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: bytelock
+spec:
+  selector:
+    app: backend
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+  type: ClusterIP
