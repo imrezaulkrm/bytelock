@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: imrezaulkrm/bytelock:frontend-1
+          image: imrezaulkrm/bytelock:frontend-2
           ports:
             - containerPort: 80
 ---
