@@ -67,7 +67,7 @@ function showMessage(text, type) {
     }, 3000);
 }
 
-// Encode and Save Message (Updated with auth)
+// Encode and Save Message
 async function encodeMessage() {
     const message = document.getElementById('messageToEncode').value;
     const key = document.getElementById('encodeKey').value;
@@ -79,13 +79,8 @@ async function encodeMessage() {
 
     try {
         const token = localStorage.getItem('token');
-        const headers = {
-            'Content-Type': 'application/json'
-        };
-        
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
 
         const response = await fetch(`${API_BASE_URL}/encode`, {
             method: 'POST',
@@ -97,9 +92,9 @@ async function encodeMessage() {
 
         if (response.ok) {
             const encodedMessage = data.encodedMessage;
-            document.getElementById('encodedMessage').setAttribute('data-full', encodedMessage);
-            document.getElementById('encodedMessage').innerText = shortenText(encodedMessage);
-            
+            const encodedElement = document.getElementById('encodedMessage');
+            encodedElement.setAttribute('data-full', encodedMessage);
+            encodedElement.innerText = shortenText(encodedMessage);
             showMessage(data.message || 'Message encoded successfully', 'success');
         } else {
             showMessage(data.message || 'Error encoding message', 'error');
@@ -110,7 +105,7 @@ async function encodeMessage() {
     }
 }
 
-// Decode Message (No changes needed, but added error handling)
+// Decode Message
 async function decodeMessage() {
     const encodedMessage = document.getElementById('messageToDecode').value;
     const key = document.getElementById('decodeKey').value;
@@ -131,9 +126,9 @@ async function decodeMessage() {
 
         if (response.ok) {
             const decodedMessage = data.decodedMessage;
-            document.getElementById('decodedMessage').setAttribute('data-full', decodedMessage);
-            document.getElementById('decodedMessage').innerText = shortenText(decodedMessage);
-            
+            const decodedElement = document.getElementById('decodedMessage');
+            decodedElement.setAttribute('data-full', decodedMessage);
+            decodedElement.innerText = shortenText(decodedMessage);
             showMessage('Message decoded successfully', 'success');
         } else {
             showMessage(data.message || 'Wrong key or corrupted data', 'error');
@@ -149,55 +144,66 @@ function shortenText(text, length = 20) {
     return text.length > length ? text.substring(0, length) + '...' : text;
 }
 
-// Copy encoded text (no changes)
-function copyEncoded() {
-    const encodedElement = document.getElementById('encodedMessage');
-    const fullText = encodedElement.getAttribute('data-full');
-    
-    if (!fullText) {
+// Robust Copy function
+function copyText(elementId) {
+    const element = document.getElementById(elementId);
+    if (!element) {
+        showMessage('Element not found', 'error');
+        return;
+    }
+
+    const textToCopy = element.getAttribute('data-full');
+    if (!textToCopy) {
         showMessage('Nothing to copy', 'error');
         return;
     }
 
-    const copyBtn = encodedElement.nextElementSibling;
-    
-    navigator.clipboard.writeText(fullText).then(() => {
-        showCopySuccess(copyBtn);
-    }).catch(err => {
-        console.error("Failed to copy:", err);
-    });
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textToCopy)
+            .then(() => showCopySuccess(element))
+            .catch(err => fallbackCopyText(textToCopy, element));
+    } else {
+        fallbackCopyText(textToCopy, element);
+    }
 }
 
-// Copy decoded text (no changes)
-function copyDecoded() {
-    const decodedElement = document.getElementById('decodedMessage');
-    const fullText = decodedElement.getAttribute('data-full');
-    
-    if (!fullText) {
-        showMessage('Nothing to copy', 'error');
-        return;
+// Fallback copy using textarea
+function fallbackCopyText(text, element) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) showCopySuccess(element);
+        else showMessage('Copy failed', 'error');
+    } catch (err) {
+        console.error('Fallback copy failed:', err);
+        showMessage('Copy failed', 'error');
     }
 
-    const copyBtn = decodedElement.nextElementSibling;
-    
-    navigator.clipboard.writeText(fullText).then(() => {
-        showCopySuccess(copyBtn);
-    }).catch(err => {
-        console.error("Failed to copy:", err);
-    });
+    document.body.removeChild(textarea);
 }
 
 // Show copy success
-function showCopySuccess(copyBtn) {
+function showCopySuccess(element) {
+    const copyBtn = element.nextElementSibling || element;
+    const originalText = copyBtn.innerText;
     copyBtn.innerText = "Copied!";
     copyBtn.classList.add('copied');
+
     setTimeout(() => {
-        copyBtn.innerText = "Copy";
+        copyBtn.innerText = originalText;
         copyBtn.classList.remove('copied');
     }, 1500);
 }
 
-// Matrix Effect (No changes)
+// Shortcut functions for buttons
+function copyEncoded() { copyText('encodedMessage'); }
+function copyDecoded() { copyText('decodedMessage'); }
+
+// Matrix Effect
 const canvas = document.getElementById("matrixCanvas");
 const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
