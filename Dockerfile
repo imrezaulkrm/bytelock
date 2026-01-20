@@ -1,29 +1,29 @@
-# Stage 1: Build Stage
-FROM node:22.12.0-alpine AS build
+# ---------- Stage 1: Build ----------
+FROM node:22.12.0-alpine AS builder
 
-# Set the working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
 COPY package*.json ./
+RUN npm ci --omit=dev
 
-# Install only production dependencies
-RUN npm install --production
-
-# Copy the rest of the application code
 COPY . .
 
-# Stage 2: Production Stage
+# ---------- Stage 2: Production ----------
 FROM node:22.12.0-alpine
 
-# Set the working directory
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 -G nodejs
+
 WORKDIR /app
 
-# Copy only the necessary files from the build stage
-COPY --from=build /app /app
+COPY --from=builder --chown=nodejs:nodejs /app /app
 
-# Expose the port your app runs on
+USER nodejs
+
 EXPOSE 5000
 
-# Start the application
-CMD ["npm", "start"]
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s \
+  CMD node -e "require('http').get('http://localhost:5000/health', r => process.exit(r.statusCode === 200 ? 0 : 1))"
+
+CMD ["node", "server.js"]

@@ -10,7 +10,10 @@ exports.googleLogin = async (req, res) => {
         return res.redirect('/?error=database_offline');
     }
 
-    const { googleId, name, email, avatar } = req.user;
+    const googleId = req.user.id;
+    const name = req.user.displayName;
+    const email = req.user.emails[0].value;
+    const avatar = req.user.photos && req.user.photos[0] ? req.user.photos[0].value : null;
 
     try {
         let user = await User.findOne({ googleId });
@@ -20,9 +23,10 @@ exports.googleLogin = async (req, res) => {
                 googleId, 
                 name, 
                 email,
-                avatar: avatar || undefined
+                avatar
             });
             await user.save();
+            console.log('✓ New user created:', email);
         }
 
         // Update last login
@@ -32,7 +36,7 @@ exports.googleLogin = async (req, res) => {
         const token = jwt.sign(
             { userId: user._id, email: user.email }, 
             process.env.JWT_SECRET, 
-            { expiresIn: '24h' }
+            { expiresIn: '7d' }
         );
 
         const userData = encodeURIComponent(JSON.stringify({
@@ -118,8 +122,6 @@ exports.login = async (req, res) => {
                 message: "Invalid credentials" 
             });
         }
-
-        // Add password comparison here if you have password hashing
 
         const token = jwt.sign(
             { userId: user._id, email: user.email }, 

@@ -40,7 +40,7 @@ const encodeMessage = async (req, res) => {
         if (!isDBConnected()) {
             return res.status(200).json({ 
                 success: true,
-                message: "Message encoded (offline mode)",
+                message: "Message encoded (offline mode - not saved)",
                 mode: "offline",
                 encodedMessage
             });
@@ -59,7 +59,7 @@ const encodeMessage = async (req, res) => {
 
         res.status(200).json({ 
             success: true,
-            message: req.user?.userId ? "Saved to your account" : "Saved as orphan (login to claim)",
+            message: req.user?.userId ? "Message encoded and saved to your account" : "Message encoded and saved as orphan (login to claim)",
             mode: req.user?.userId ? "authenticated" : "anonymous",
             encodedMessage,
             messageId: newMessage._id
