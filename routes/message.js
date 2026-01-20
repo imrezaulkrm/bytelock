@@ -1,22 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const messageController = require('../controllers/messageController'); // Import controller
+const messageController = require('../controllers/messageController');
+const { authenticate, optionalAuth } = require('../middleware/auth');
 
-// Destructure functions from the controller
-const { encodeMessage, saveMessage, getMessages, deleteMessage, getUniversalMessages, decodeMessage } = messageController;
+// Public routes (no auth needed)
+router.post('/encode', optionalAuth, messageController.encodeMessage);
+router.post('/decode', messageController.decodeMessage);
+router.get('/universal', messageController.getUniversalMessages);
 
-// POST routes
-router.post('/encode', encodeMessage);
-router.post('/save', saveMessage);
-router.post('/decode', decodeMessage); // Add this route for decoding
+// Semi-protected (optional auth)
+router.delete('/:id', optionalAuth, messageController.deleteMessage);
 
-// GET routes
-router.get('/', getMessages);
-router.get('/universal', getUniversalMessages);
-
-// DELETE routes
-router.delete('/:id', deleteMessage);
+// Protected routes (require auth)
+router.post('/save', authenticate, messageController.saveMessage);
+router.get('/', authenticate, messageController.getMessages);
 
 module.exports = router;
-
-

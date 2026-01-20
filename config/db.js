@@ -1,17 +1,28 @@
 const mongoose = require('mongoose');
-require('dotenv').config();
 
 const connectDB = async () => {
+    // Check if MONGO_URI exists and is not empty
+    if (!process.env.MONGO_URI || process.env.MONGO_URI.trim() === '') {
+        console.log('⚠️  MONGO_URI not configured');
+        console.log('⚠️  Running without database - some features will be limited');
+        return false;
+    }
+
     try {
-        await mongoose.connect(process.env.MONGO_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
-        console.log("MongoDB connected");
+        await mongoose.connect(process.env.MONGO_URI);
+        console.log('✓ MongoDB connected successfully');
+        console.log(`✓ Database: ${mongoose.connection.name}`);
+        return true;
     } catch (err) {
-        console.error(err.message);
-        process.exit(1);
+        console.error('⚠️  MongoDB connection failed:', err.message);
+        console.log('⚠️  Continuing without database - some features will be limited');
+        return false;
     }
 };
 
-module.exports = connectDB;
+// Check if database is connected
+const isDBConnected = () => {
+    return mongoose.connection.readyState === 1;
+};
+
+module.exports = { connectDB, isDBConnected };

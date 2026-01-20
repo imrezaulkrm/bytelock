@@ -1,107 +1,244 @@
 const crypto = require('crypto');
 const Message = require('../models/message');
-const UniversalMessage = require('../models/universalMessage');
+const { isDBConnected } = require('../config/db');
 
-const algorithm = 'aes-256-cbc'; // AES Algorithm
-const iv = crypto.randomBytes(16); // Initialization Vector
+const algorithm = 'aes-256-cbc';
 
 // Custom Encoding Function
 const customEncode = (message, key) => {
-    const iv = crypto.randomBytes(16); // Generate a new IV for each encryption
+    const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv(algorithm, crypto.scryptSync(key, 'salt', 32), iv);
-    let encrypted = cipher.update(message, 'utf8', 'base64'); // Use 'base64' instead of 'hex'
-    encrypted += cipher.final('base64'); // Use 'base64' instead of 'hex'
-    return `${iv.toString('base64')}:${encrypted}`; // Store IV with the encrypted text
+    let encrypted = cipher.update(message, 'utf8', 'base64');
+    encrypted += cipher.final('base64');
+    return `${iv.toString('base64')}:${encrypted}`;
 };
 
 // Custom Decoding Function
 const customDecode = (encodedMessage, key) => {
-    const [ivBase64, encryptedData] = encodedMessage.split(':'); // Split IV and encrypted data
-    const decipher = crypto.createDecipheriv(algorithm, crypto.scryptSync(key, 'salt', 32), Buffer.from(ivBase64, 'base64')); // Use 'base64'
-    let decrypted = decipher.update(encryptedData, 'base64', 'utf8'); // Use 'base64'
+    const [ivBase64, encryptedData] = encodedMessage.split(':');
+    const decipher = crypto.createDecipheriv(algorithm, crypto.scryptSync(key, 'salt', 32), Buffer.from(ivBase64, 'base64'));
+    let decrypted = decipher.update(encryptedData, 'base64', 'utf8');
     decrypted += decipher.final('utf8');
     return decrypted;
 };
 
-// Encode Message
+// Encode Message (Anonymous + Logged-in)
 const encodeMessage = async (req, res) => {
-    const { message, key, userId } = req.body;
+    const { message, key, title } = req.body;
+    
     if (!message || !key) {
-        return res.status(400).json({ message: "Message and key are required" });
+        return res.status(400).json({ 
+            success: false,
+            message: "Message and key are required" 
+        });
     }
+
     try {
         const encodedMessage = customEncode(message, key);
-        if (!userId) {
-            const newMessage = new UniversalMessage({ message: encodedMessage, key });
-            await newMessage.save();
+        
+        // If DB not connected, just encode (don't save)
+        if (!isDBConnected()) {
+            return res.status(200).json({ 
+                success: true,
+                message: "Message encoded (offline mode)",
+                mode: "offline",
+                encodedMessage
+            });
         }
-        res.status(200).json({ encodedMessage });
-    } catch (err) {
-        res.status(500).json({ message: "Error encoding message", error: err });
-    }
-};
 
-// Save Message
-const saveMessage = async (req, res) => {
-    const { message, key, userId } = req.body;
-    if (!userId) {
-        return res.status(403).json({ message: "You must be logged in to save messages" });
-    }
-    try {
-        const newMessage = new Message({ message, key, user: userId });
+        // Save to DB
+        const newMessage = new Message({
+            userId: req.user?.userId || null,  // null = orphan
+            message: encodedMessage,
+            key,
+            title: title || 'Untitled',
+            isOrphan: !req.user?.userId
+        });
+        
         await newMessage.save();
-        res.status(200).json({ message: "Message saved successfully!" });
+
+        res.status(200).json({ 
+            success: true,
+            message: req.user?.userId ? "Saved to your account" : "Saved as orphan (login to claim)",
+            mode: req.user?.userId ? "authenticated" : "anonymous",
+            encodedMessage,
+            messageId: newMessage._id
+        });
     } catch (err) {
-        res.status(500).json({ message: "Error saving message", error: err });
+        console.error('Encode error:', err);
+        res.status(500).json({ 
+            success: false,
+            message: "Error encoding message", 
+            error: err.message 
+        });
     }
 };
 
-// Get Messages
+// Decode Message (No auth needed)
+const decodeMessage = (req, res) => {
+    const { encodedMessage, key } = req.body;
+    
+    if (!encodedMessage || !key) {
+        return res.status(400).json({ 
+            success: false,
+            message: "Encoded message and key are required" 
+        });
+    }
+
+    try {
+        const decodedMessage = customDecode(encodedMessage, key);
+        
+        res.status(200).json({ 
+            success: true,
+            decodedMessage 
+        });
+    } catch (err) {
+        res.status(500).json({ 
+            success: false,
+            message: "Wrong key or corrupted data" 
+        });
+    }
+};
+
+// Save Message (Logged-in users only)
+const saveMessage = async (req, res) => {
+    if (!req.user?.userId) {
+        return res.status(401).json({ 
+            success: false,
+            message: "Please login to save messages" 
+        });
+    }
+
+    if (!isDBConnected()) {
+        return res.status(503).json({ 
+            success: false,
+            message: "Database not connected" 
+        });
+    }
+
+    const { message, key, title } = req.body;
+
+    try {
+        const encodedMessage = customEncode(message, key);
+        
+        const newMessage = new Message({
+            userId: req.user.userId,
+            message: encodedMessage,
+            key,
+            title: title || 'Untitled',
+            isOrphan: false
+        });
+        
+        await newMessage.save();
+
+        res.status(200).json({ 
+            success: true,
+            message: "Message saved successfully!",
+            messageId: newMessage._id
+        });
+    } catch (err) {
+        res.status(500).json({ 
+            success: false,
+            message: "Error saving message" 
+        });
+    }
+};
+
+// Get My Messages (Logged-in users only)
 const getMessages = async (req, res) => {
+    if (!req.user?.userId) {
+        return res.status(401).json({ 
+            success: false,
+            message: "Please login to view messages" 
+        });
+    }
+
+    if (!isDBConnected()) {
+        return res.status(503).json({ 
+            success: false,
+            message: "Database not connected" 
+        });
+    }
+
     try {
-        const messages = await Message.find();
-        res.json(messages);
+        const messages = await Message.find({ userId: req.user.userId })
+            .sort({ createdAt: -1 });
+
+        res.status(200).json({ 
+            success: true,
+            count: messages.length,
+            messages
+        });
     } catch (err) {
-        res.status(500).json({ message: "Error fetching messages", error: err });
+        res.status(500).json({ 
+            success: false,
+            message: "Error fetching messages" 
+        });
     }
 };
 
-// Get Universal Messages
+// Get Orphan Messages (Public)
 const getUniversalMessages = async (req, res) => {
+    if (!isDBConnected()) {
+        return res.status(503).json({ 
+            success: false,
+            message: "Database not connected" 
+        });
+    }
+
     try {
-        const messages = await UniversalMessage.find();
-        res.json(messages);
+        const messages = await Message.find({ isOrphan: true })
+            .sort({ createdAt: -1 })
+            .limit(100);
+
+        res.json({ 
+            success: true,
+            count: messages.length,
+            messages 
+        });
     } catch (err) {
-        res.status(500).json({ message: "Error fetching universal messages", error: err });
+        res.status(500).json({ 
+            success: false,
+            message: "Error fetching messages" 
+        });
     }
 };
 
 // Delete Message
 const deleteMessage = async (req, res) => {
+    if (!isDBConnected()) {
+        return res.status(503).json({ 
+            success: false,
+            message: "Database not connected" 
+        });
+    }
+
     try {
-        const { id } = req.params;
-        await Message.findByIdAndDelete(id);
-        res.json({ message: "Message deleted successfully" });
+        const query = req.user?.userId 
+            ? { _id: req.params.id, userId: req.user.userId }
+            : { _id: req.params.id, isOrphan: true };
+
+        const message = await Message.findOneAndDelete(query);
+
+        if (!message) {
+            return res.status(404).json({ 
+                success: false,
+                message: "Message not found" 
+            });
+        }
+
+        res.json({ 
+            success: true,
+            message: "Message deleted successfully" 
+        });
     } catch (err) {
-        res.status(500).json({ message: "Error deleting message", error: err });
+        res.status(500).json({ 
+            success: false,
+            message: "Error deleting message" 
+        });
     }
 };
 
-// Decode Message
-const decodeMessage = (req, res) => {
-    const { encodedMessage, key } = req.body;
-    if (!encodedMessage || !key) {
-        return res.status(400).json({ message: "Encoded message and key are required" });
-    }
-    try {
-        const decodedMessage = customDecode(encodedMessage, key);
-        res.status(200).json({ decodedMessage });
-    } catch (err) {
-        res.status(500).json({ message: "Error decoding message", error: err });
-    }
-};
-
-// Export functions
 module.exports = {
     encodeMessage,
     saveMessage,
