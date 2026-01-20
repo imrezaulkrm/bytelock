@@ -3,25 +3,31 @@ const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 const { isDBConnected } = require('../config/db');
 
-// Google Login Handler
+// Google Login Handler - UPDATED
 exports.googleLogin = async (req, res) => {
     // Check if database is connected
     if (!isDBConnected()) {
-        return res.status(503).json({ 
-            success: false,
-            message: "Database not connected - authentication unavailable" 
-        });
+        return res.redirect('/?error=database_offline');
     }
 
-    const { googleId, name, email } = req.user;
+    const { googleId, name, email, avatar } = req.user;
 
     try {
         let user = await User.findOne({ googleId });
         
         if (!user) {
-            user = new User({ googleId, name, email });
+            user = new User({ 
+                googleId, 
+                name, 
+                email,
+                avatar: avatar || undefined
+            });
             await user.save();
         }
+
+        // Update last login
+        user.lastLogin = new Date();
+        await user.save();
 
         const token = jwt.sign(
             { userId: user._id, email: user.email }, 
@@ -29,25 +35,22 @@ exports.googleLogin = async (req, res) => {
             { expiresIn: '24h' }
         );
 
-        res.status(200).json({ 
-            success: true,
-            token,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email
-            }
-        });
+        const userData = encodeURIComponent(JSON.stringify({
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            avatar: user.avatar
+        }));
+
+        // Redirect to callback page with token
+        res.redirect(`/callback.html?token=${token}&user=${userData}`);
     } catch (err) {
         console.error('Login error:', err);
-        res.status(500).json({ 
-            success: false,
-            message: "Error logging in" 
-        });
+        res.redirect('/?error=login_failed');
     }
 };
 
-// Register User (if needed)
+// Register User (if needed) - NO CHANGE
 exports.register = async (req, res) => {
     if (!isDBConnected()) {
         return res.status(503).json({ 
@@ -95,7 +98,7 @@ exports.register = async (req, res) => {
     }
 };
 
-// Login User (if needed)
+// Login User (if needed) - NO CHANGE
 exports.login = async (req, res) => {
     if (!isDBConnected()) {
         return res.status(503).json({ 
