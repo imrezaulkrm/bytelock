@@ -178,6 +178,75 @@ button:hover {
     border: 1px solid #f5c6cb;
 }
 
+/* Navbar Styles - ADD THIS */
+.navbar {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.nav-left h1 {
+    margin: 0;
+    font-size: 1.8em;
+}
+
+.nav-right {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 10px;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.nav-btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+}
+
+.login-btn {
+    background: #4285f4;
+}
+
+.login-btn:hover {
+    background: #357ae8;
+}
+
+.logout-btn {
+    background: #dc3545;
+}
+
+.logout-btn:hover {
+    background: #c82333;
+}
+
+.admin-btn {
+    background: #ff9900;
+}
+
+.admin-btn:hover {
+    background: #cc7a00;
+}
+
 @media (max-width: 820px) {
     .container {
         flex-direction: column;

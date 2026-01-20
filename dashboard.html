@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="image/title.png" type="image/png">
+    <title>My Messages - BYTELOCK</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <h1>Bytelock</h1>
+        </div>
+        <div class="nav-right">
+            <button onclick="goHome()" class="nav-btn">Home</button>
+            <button onclick="logout()" class="nav-btn logout-btn">Logout</button>
+        </div>
+    </nav>
+
+    <canvas id="matrixCanvas"></canvas>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h2>My Encrypted Messages</h2>
+            <button onclick="loadMessages()" class="refresh-btn">🔄 Refresh</button>
+        </div>
+
+        <div id="loadingSpinner" style="display:none; text-align:center; padding:20px;">
+            <p>Loading messages...</p>
+        </div>
+
+        <div id="messagesContainer" class="messages-grid">
+            <!-- Messages will be loaded here -->
+        </div>
+
+        <div id="noMessages" style="display:none; text-align:center; padding:40px;">
+            <p>No messages yet. Go to home page to create your first encrypted message!</p>
+            <button onclick="goHome()" class="nav-btn">Go to Home</button>
+        </div>
+    </div>
+
+    <!-- Decode Modal -->
+    <div id="decodeModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeDecodeModal()">&times;</span>
+            <h3>Decode Message</h3>
+            <p><strong>Title:</strong> <span id="modalTitle"></span></p>
+            <input type="password" id="modalKey" placeholder="Enter decryption key">
+            <button onclick="decodeMessageInModal()">Decode</button>
+            <div id="modalResult" style="margin-top:15px; padding:10px; display:none;"></div>
+        </div>
+    </div>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+.admin-container {
+    position: relative;
+    z-index: 2;
+    max-width: 1400px;
+    margin: 20px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Stats Cards */
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.stat-card h3 {
+    font-size: 2.5em;
+    margin: 0 0 10px 0;
+}
+
+.stat-card p {
+    margin: 0;
+    font-size: 1.1em;
+    opacity: 0.9;
+}
+
+/* Users Section */
+.users-section {
+    margin-top: 30px;
+}
+
+.users-section h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+/* User Card */
+.user-card {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-left: 4px solid #007bff;
+}
+
+.user-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.user-card-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.user-avatar-large {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid #007bff;
+}
+
+.user-info h4 {
+    margin: 0 0 5px 0;
+    color: #333;
+    font-size: 1.1em;
+}
+
+.user-info p {
+    margin: 0;
+    font-size: 0.85em;
+    color: #666;
+}
+
+.user-stats {
+    background: white;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+.user-stats p {
+    margin: 5px 0;
+    font-size: 0.9em;
+    color: #555;
+}
+
+.user-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.user-actions button {
+    flex: 1;
+    padding: 10px;
+    font-size: 14px;
+}
+
+.view-btn {
+    background: #17a2b8;
+}
+
+.view-btn:hover {
+    background: #138496;
+}
+
+.delete-user-btn {
+    background: #dc3545;
+}
+
+.delete-user-btn:hover {
+    background: #c82333;
+}
+
+/* User Details Modal */
+.modal-content.large {
+    max-width: 800px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.user-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #eee;
+    margin-bottom: 20px;
+}
+
+.user-detail-header img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid #007bff;
+}
+
+.user-detail-info h3 {
+    margin: 0 0 5px 0;
+    color: #333;
+}
+
+.user-detail-info p {
+    margin: 3px 0;
+    color: #666;
+}
+
+.messages-list {
+    margin-top: 20px;
+}
+
+.messages-list h4 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.message-item {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border-left: 3px solid #007bff;
+}
+
+.message-item h5 {
+    margin: 0 0 8px 0;
+    color: #333;
+}
+
+.message-item .encrypted-text {
+    background: #e9ecef;
+    padding: 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.85em;
+    word-break: break-all;
+    margin: 8px 0;
+}
+
+.message-item .message-meta {
+    font-size: 0.85em;
+    color: #666;
+    margin: 5px 0;
+}
+
+.message-item button {
+    background: #dc3545;
+    padding: 6px 12px;
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+.message-item button:hover {
+    background: #c82333;
+}
+
+.no-messages {
+    text-align: center;
+    padding: 30px;
+    color: #999;
+}
+
+/* Loading Spinner */
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.loading::after {
+    content: '⏳';
+    font-size: 2em;
+    display: block;
+    margin-top: 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .users-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .user-detail-header {
+        flex-direction: column;
+        text-align: center;
+    }
+}
